@@ -29,13 +29,18 @@ export class AuthService {
   /** 로그인: 토큰 발급 */
   async login(email: string, password: string) {
     const user = await this.validateUser(email, password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const payload = { sub: user.id, email: user.email };
     return {
-      access_token: this.jwtService.sign(payload),
-    };
+    access_token: this.jwtService.sign(payload, {
+      jwtid: String(user.id)   // 예: 유저 ID를 JTI로 사용하거나 uuid를 생성
+    }),
+  };
+  }
+
+  async blacklist(jti: string): Promise<{ success: true }> {
+    console.log(`로그아웃 처리된 jti: ${jti}`);
+    return { success: true };
   }
 }

@@ -14,7 +14,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // 요청이 인증되면 이 validate()가 리턴한 값이 req.user가 됩니다.
-    return { userId: payload.sub, email: payload.email };
+    // 요청이 인증되면 이 validate()가 리턴한 값이 req.user가 됩니다.   
+    return {
+        userId: payload.sub,
+        email: payload.email,
+        jti: payload.jti,
+    }; 
   }
 }

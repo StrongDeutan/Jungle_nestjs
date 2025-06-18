@@ -1,8 +1,11 @@
 // src/auth/auth.controller.ts
 
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, UseGuards, Req,  } from '@nestjs/common';
 import { AuthService }                                  from './auth.service';
 import { LoginDto }                                     from './dto/login.dto';
+import { JwtAuthGuard }                     from './jwt-auth.guard';
+
+
 
 @Controller('api/auth')
 export class AuthController {
@@ -22,5 +25,12 @@ export class AuthController {
 
     // 3) 클라이언트로 반환
     return token;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@Req() req) {
+    const jti = req.user.jti;            // JwtStrategy.validate() 에서 jti를 포함해야 합니다
+    return this.authService.blacklist(jti);
   }
 }
