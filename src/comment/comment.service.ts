@@ -44,4 +44,20 @@ export class CommentService {
       order: { createdAt: 'ASC' },
     });
   }
+
+   async remove(postId: number, commentId: number): Promise<void> {
+    // 댓글이 실제로 해당 포스트에 속해있는지 확인
+    const comment = await this.commentRepo.findOne({
+      where: { id: commentId },
+      relations: ['post'],
+    });
+    if (!comment || comment.post.id !== postId) {
+      throw new NotFoundException(`Comment ${commentId} for post ${postId} not found`);
+    }
+
+    const result = await this.commentRepo.delete(commentId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Comment with id ${commentId} not found`);
+    }
+  }
 }

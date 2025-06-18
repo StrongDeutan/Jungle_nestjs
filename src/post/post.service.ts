@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository }       from 'typeorm';
 import { Post }             from './post.entity';
@@ -18,5 +18,12 @@ export class PostService {
 
   findAll(): Promise<Post[]> {
     return this.postRepo.find({ relations: ['comments'] });
+  }
+
+  async remove(id: number): Promise<void> {
+    const result = await this.postRepo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Post with id ${id} not found`);
+    }
   }
 }

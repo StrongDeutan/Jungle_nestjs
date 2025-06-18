@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,7 +11,7 @@
   <!-- 헤더 -->
   <header class="bg-white shadow p-4 flex justify-between items-center">
     <h1 class="text-2xl font-bold">My Board</h1>
-    <a href="community/create_post.html"
+    <a href="/community/create_post.html"
        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
       새 글 작성
     </a>
@@ -19,24 +19,43 @@
 
   <!-- 게시글 리스트 컨테이너 -->
   <main id="postsContainer" class="container mx-auto py-6 space-y-4">
-    <p id="loadingMsg" class="text-center text-gray-500">로딩 중...</p>
+    <p class="text-center text-gray-500">로딩 중...</p>
   </main>
 
   <script>
-    document.addEventListener('DOMContentLoaded', loadPosts);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPosts();
+
+      // 이벤트 위임: 댓글/게시글 삭제 버튼 처리
+      document.getElementById('postsContainer').addEventListener('click', async e => {
+        // 댓글 삭제
+        const cbtn = e.target.closest('.delete-comment-btn');
+        if (cbtn) {
+          const { pid, cid } = cbtn.dataset;
+          if (!confirm('정말 댓글을 삭제하시겠습니까?')) return;
+          const res = await fetch(`/api/posts/${pid}/comments/${cid}`, { method: 'DELETE' });
+          if (res.ok) return loadPosts();
+          return alert('댓글 삭제 실패');
+        }
+        // 게시글 삭제
+        const pbtn = e.target.closest('.delete-post-btn');
+        if (pbtn) {
+          const { pid } = pbtn.dataset;
+          if (!confirm('정말 게시글을 삭제하시겠습니까?')) return;
+          const res = await fetch(`/api/posts/${pid}`, { method: 'DELETE' });
+          if (res.ok) return loadPosts();
+          return alert('게시글 삭제 실패');
+        }
+      });
+    });
 
     async function loadPosts() {
       const container = document.getElementById('postsContainer');
-      container.innerHTML = '';
-      const loading = document.createElement('p');
-      loading.id = 'loadingMsg';
-      loading.className = 'text-center text-gray-500';
-      loading.textContent = '로딩 중...';
-      container.appendChild(loading);
+      container.innerHTML = '<p class="text-center text-gray-500">로딩 중...</p>';
 
       try {
         const res = await fetch('/api/posts');
-        if (!res.ok) throw new Error('게시글을 불러오는 데 실패했습니다.');
+        if (!res.ok) throw new Error('게시글 불러오기 실패');
         const posts = await res.json();
 
         container.innerHTML = '';
@@ -46,10 +65,11 @@
         }
 
         posts.forEach(post => {
+          // 카드 생성
           const card = document.createElement('div');
           card.className = 'bg-white shadow rounded-lg overflow-hidden';
 
-          // 1) 게시글 헤더 (제목, 메타, 삭제)
+          // 1) 게시글 헤더 (제목·메타·삭제)
           const header = document.createElement('div');
           header.className = 'flex justify-between items-center px-6 py-4';
           header.innerHTML = `
@@ -59,50 +79,55 @@
                 작성자: ${escape(post.authorName || '익명')} • ${new Date(post.createdAt).toLocaleString()}
               </p>
             </div>
-            <button data-pid="${post.id}" class="text-red-500 hover:underline text-sm delete-post-btn">
+            <button 
+              data-pid="${post.id}" 
+              class="text-red-500 hover:underline text-sm delete-post-btn"
+            >
               삭제
             </button>
           `;
           card.appendChild(header);
 
-          // 2) 요약 + 댓글 토글 버튼
+          // 2) 글 요약 + 댓글 토글
           const summaryBtn = document.createElement('button');
-          summaryBtn.className = 'w-full text-left px-6 pb-4 hover:bg-gray-50 focus:outline-none toggle-comments';
-          summaryBtn.innerHTML = `
-            <p class="mt-2 text-gray-700">${escape(post.content).slice(0, 100)}…</p>
-          `;
+          summaryBtn.className = 'w-full text-left px-6 pb-4 hover:bg-gray-50 focus:outline-none';
+          summaryBtn.innerHTML = `<p class="mt-2 text-gray-700">${escape(post.content).slice(0, 100)}…</p>`;
           card.appendChild(summaryBtn);
 
-          // 3) 댓글 섹션 (숨김)
+          // 3) 댓글 섹션
           const commentsSection = document.createElement('div');
-          commentsSection.className = 'px-6 py-4 border-t divide-y divide-gray-200 hidden comments-section';
+          commentsSection.className = 'px-6 py-4 border-t divide-y divide-gray-200 hidden';
 
           // 3-1) 댓글 목록
           const commentList = document.createElement('div');
           commentList.className = 'space-y-2 pb-4';
           if (post.comments && post.comments.length) {
             post.comments.forEach(c => {
-              const div = document.createElement('div');
-              div.className = 'py-2 flex justify-between items-start';
-              div.innerHTML = `
+              const row = document.createElement('div');
+              row.className = 'py-2 flex justify-between items-start';
+              row.innerHTML = `
                 <div>
                   <p class="font-medium">${escape(c.authorName)} 
                     <span class="text-gray-500 text-sm">• ${new Date(c.createdAt).toLocaleTimeString()}</span>
                   </p>
                   <p>${escape(c.content)}</p>
                 </div>
-                <button data-cid="${c.id}" class="text-red-500 hover:underline text-sm delete-comment-btn">
+                <button 
+                  data-pid="${post.id}" 
+                  data-cid="${c.id}" 
+                  class="text-red-500 hover:underline text-sm delete-comment-btn"
+                >
                   삭제
                 </button>
               `;
-              commentList.appendChild(div);
+              commentList.appendChild(row);
             });
           } else {
             commentList.innerHTML = '<p class="text-gray-500 italic">등록된 댓글이 없습니다.</p>';
           }
           commentsSection.appendChild(commentList);
 
-          // 3-2) 댓글 입력 폼
+          // 3-2) 새 댓글 입력 폼
           const form = document.createElement('form');
           form.className = 'pt-4 flex space-x-2';
           form.innerHTML = `
@@ -115,15 +140,14 @@
           `;
           form.addEventListener('submit', async e => {
             e.preventDefault();
-            const input = form.querySelector('input');
-            const text = input.value.trim();
+            const text = form.querySelector('input').value.trim();
             if (!text) return;
-            const resp = await fetch(`/api/posts/${post.id}/comments`, {
+            const r = await fetch(`/api/posts/${post.id}/comments`, {
               method: 'POST',
               headers: {'Content-Type':'application/json'},
               body: JSON.stringify({ content: text }),
             });
-            if (resp.ok) loadPosts();
+            if (r.ok) loadPosts();
             else alert('댓글 등록 실패');
           });
           commentsSection.appendChild(form);
@@ -131,43 +155,17 @@
           card.appendChild(commentsSection);
           container.appendChild(card);
 
-          // 이벤트 바인딩: 삭제, 토글
-          header.querySelector('.delete-post-btn')
-            .addEventListener('click', () => deletePost(post.id));
-          summaryBtn.addEventListener('click', () =>
-            commentsSection.classList.toggle('hidden')
-          );
-        });
-
-        // 댓글 삭제 버튼: after DOM built
-        document.querySelectorAll('.delete-comment-btn').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const commentId = btn.dataset.cid;
-            if (!confirm('정말 댓글을 삭제하시겠습니까?')) return;
-            const postId = btn.closest('.comments-section')
-                              .previousSibling
-                              .querySelector('.delete-post-btn').dataset.pid;
-            const resp = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
-              method: 'DELETE',
-            });
-            if (resp.ok) loadPosts();
-            else alert('댓글 삭제 실패');
+          // 댓글 토글
+          summaryBtn.addEventListener('click', () => {
+            commentsSection.classList.toggle('hidden');
           });
         });
-
       } catch (err) {
         container.innerHTML = `<p class="text-center text-red-500">${err.message}</p>`;
       }
     }
 
-    async function deletePost(postId) {
-      if (!confirm('정말 게시글을 삭제하시겠습니까?')) return;
-      const resp = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
-      if (resp.ok) loadPosts();
-      else alert('게시글 삭제 실패');
-    }
-
-    // XSS 방지용 간단 함수
+    // XSS 방지용 이스케이프 함수
     function escape(str) {
       return String(str)
         .replace(/&/g, '&amp;')
@@ -175,5 +173,6 @@
         .replace(/>/g, '&gt;');
     }
   </script>
+
 </body>
 </html>
