@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>새 글 작성</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6">
+    <h1 class="text-2xl font-bold mb-4">새 글 작성</h1>
+
+    <div id="errorMsg" class="mb-4 text-red-600 hidden"></div>
+
+    <form id="postForm" class="space-y-4">
+      <div>
+        <label for="title" class="block text-gray-700 font-medium mb-1">제목</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          required
+          placeholder="게시글 제목을 입력하세요"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
+
+      <div>
+        <label for="content" class="block text-gray-700 font-medium mb-1">내용</label>
+        <textarea
+          id="content"
+          name="content"
+          rows="8"
+          required
+          placeholder="게시글 내용을 입력하세요"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button
+          type="button"
+          onclick="history.back()"
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
+        >
+          취소
+        </button>
+        <button
+          type="submit"
+          class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        >
+          등록하기
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('postForm');
+    const errEl = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      errEl.classList.add('hidden');
+      const title = form.title.value.trim();
+      const content = form.content.value.trim();
+
+      if (!title || !content) {
+        errEl.textContent = '제목과 내용을 모두 입력해주세요.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, content }),
+        });
+        if (!res.ok) {
+          const { message } = await res.json();
+          throw new Error(message || '글 작성에 실패했습니다.');
+        }
+        // 작성 성공 시 메인 게시판으로 이동
+        window.location.href = '/community/main.html';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
