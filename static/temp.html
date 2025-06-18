@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Your App</title>
+  <style>
+    * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #1f2937;
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input:invalid {
+            border-color: #ef4444;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: auto;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            text-align: center;
+            position: relative;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+            z-index: 1;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-button {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .social-button:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .signup-link {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+            }
+            
+            .social-login {
+                flex-direction: column;
+            }
+        }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>Welcome back</h1>
+      <p>Please sign in to your account</p>
+    </div>
+
+    <!-- 로그인 에러 메시지 박스 -->
+    <div class="error-message" id="errorMessage" role="alert"></div>
+
+    <!-- 로그인 폼: id 추가, novalidate 유지 -->
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          required 
+          autocomplete="email"
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          required 
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          minlength="6"
+        />
+      </div>
+
+      <div class="form-options">
+        <div class="remember-me">
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Remember me</label>
+        </div>
+        <a href="#" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="login-button">Sign in</button>
+    </form>
+
+    <div class="divider"><span>Or continue with</span></div>
+
+    <div class="social-login">
+      <button type="button" class="social-button" onclick="loginWithGoogle()">
+        <!-- Google SVG... -->
+        Google
+      </button>
+      <button type="button" class="social-button" onclick="loginWithGitHub()">
+        <!-- GitHub SVG... -->
+        GitHub
+      </button>
+    </div>
+
+    <div class="signup-link">
+      Don't have an account? <a href="sign_up.html">Sign up</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errEl = document.getElementById('errorMessage');
+    const button = document.querySelector('.login-button');
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      errEl.style.display = 'none';
+
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      // 클라이언트 유효성 검사
+      if (!email || !password) {
+        showError('Please fill in all fields.');
+        return;
+      }
+      if (password.length < 6) {
+        showError('Password must be at least 6 characters.');
+        return;
+      }
+
+      // 버튼 상태 변경
+      button.textContent = 'Signing in...';
+      button.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) {
+          const { message } = await res.json();
+          throw new Error(message || 'Login failed');
+        }
+
+        // 로그인 성공 시 리다이렉트 (원하는 페이지)
+        window.location.href = '/';
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        button.textContent = 'Sign in';
+        button.disabled = false;
+      }
+    });
+
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+
+    function loginWithGoogle() {
+      // OAuth flow 또는 팝업 열기 등 구현
+      alert('Google 로그인 구현 위치');
+    }
+
+    function loginWithGitHub() {
+      alert('GitHub 로그인 구현 위치');
+    }
+
+    // 입력 필드 수정 시 에러 메시지 숨기기
+    ['email','password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        if (errEl.style.display === 'block') {
+          errEl.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
