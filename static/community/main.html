@@ -23,6 +23,19 @@
   </main>
 
   <script>
+    async function authFetch(url, options = {}) {
+      const token = localStorage.getItem('token');
+      return fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
+
+
     document.addEventListener('DOMContentLoaded', () => {
       loadPosts();
 
@@ -33,7 +46,7 @@
         if (cbtn) {
           const { pid, cid } = cbtn.dataset;
           if (!confirm('정말 댓글을 삭제하시겠습니까?')) return;
-          const res = await fetch(`/api/posts/${pid}/comments/${cid}`, { method: 'DELETE' });
+          const res = await authFetch(`/api/posts/${pid}/comments/${cid}`, { method: 'DELETE' });
           if (res.ok) return loadPosts();
           return alert('댓글 삭제 실패');
         }
@@ -42,7 +55,7 @@
         if (pbtn) {
           const { pid } = pbtn.dataset;
           if (!confirm('정말 게시글을 삭제하시겠습니까?')) return;
-          const res = await fetch(`/api/posts/${pid}`, { method: 'DELETE' });
+          const res = await authFetch(`/api/posts/${pid}`, { method: 'DELETE' });
           if (res.ok) return loadPosts();
           return alert('게시글 삭제 실패');
         }
@@ -54,7 +67,7 @@
       container.innerHTML = '<p class="text-center text-gray-500">로딩 중...</p>';
 
       try {
-        const res = await fetch('/api/posts');
+        const res = await authFetch('/api/posts');
         if (!res.ok) throw new Error('게시글 불러오기 실패');
         const posts = await res.json();
 
@@ -142,7 +155,7 @@
             e.preventDefault();
             const text = form.querySelector('input').value.trim();
             if (!text) return;
-            const r = await fetch(`/api/posts/${post.id}/comments`, {
+            const r = await authFetch(`/api/posts/${post.id}/comments`, {
               method: 'POST',
               headers: {'Content-Type':'application/json'},
               body: JSON.stringify({ content: text }),

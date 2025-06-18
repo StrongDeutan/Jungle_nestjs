@@ -8,16 +8,19 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  UseGuards
 } from '@nestjs/common';
 import { CommentService }      from './comment.service';
 import { CreateCommentDto }    from './dto/create-comment.dto';
 import { Comment }             from './comment.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('api/posts/:postId/comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   /** 특정 게시글의 댓글 전체 조회 */
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findByPost(
     @Param('postId', ParseIntPipe) postId: number,
@@ -26,6 +29,7 @@ export class CommentController {
   }
 
   /** 댓글 작성 */
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Param('postId', ParseIntPipe) postId: number,
@@ -34,6 +38,7 @@ export class CommentController {
     return this.commentService.create(postId, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':commentId')
         remove(
     @Param('postId', ParseIntPipe) postId: number,

@@ -314,7 +314,8 @@
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json',
+           },
           body: JSON.stringify({ email, password }),
         });
 
@@ -323,8 +324,10 @@
           throw new Error(message || 'Login failed');
         }
 
+        const { access_token } = await res.json();
+        localStorage.setItem('token', access_token);
+
         // 로그인 성공 시 리다이렉트 (원하는 페이지)
-        alert('success');
         window.location.href = '/community/main.html';
       } catch (err) {
         showError(err.message);
